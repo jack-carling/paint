@@ -1,12 +1,9 @@
 <template>
-  <main>
-    <router-view></router-view>
-  </main>
+  <div>Hej</div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import './scss/main.scss';
 
 export default defineComponent({});
 </script>

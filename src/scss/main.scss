@@ -50,3 +50,7 @@ button:focus-visible {
   border: 1px solid $orange;
   color: $orange;
 }
+button:disabled {
+  border: 1px solid $gray;
+  background-color: $gray;
+}

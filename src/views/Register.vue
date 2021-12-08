@@ -26,7 +26,7 @@
         <i class="material-icons">error</i>
         {{ errors.repeatPassword }}
       </span>
-      <button>Submit</button>
+      <button :disabled="isLoading">Submit</button>
     </form>
   </div>
 </template>
@@ -38,6 +38,7 @@ import { validateName, validatePassword, validateEmail } from '../utils/validate
 export default defineComponent({
   data() {
     return {
+      isLoading: false,
       name: '',
       email: '',
       password: '',
@@ -52,6 +53,8 @@ export default defineComponent({
   },
   methods: {
     async handleSubmit() {
+      if (this.isLoading) return;
+
       // Check name
       const checkName = validateName(this.name);
       this.errors.name = checkName.message;
@@ -80,6 +83,7 @@ export default defineComponent({
       const bodyData = { name: this.name, email: this.email, password: this.password };
       console.log(bodyData);
 
+      this.isLoading = true;
       const response: Response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -88,50 +92,12 @@ export default defineComponent({
         body: JSON.stringify(bodyData),
       });
       const data = await response.json();
-
-      // Redirect user on success
+      this.isLoading = false;
     },
   },
 });
 </script>
 
 <style lang="scss" scoped>
-div.main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  h1 {
-    margin-bottom: 2rem;
-  }
-  form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    input {
-      width: 250px;
-    }
-    label {
-      margin-bottom: 0.2rem;
-      width: 100%;
-    }
-    label:not(:first-of-type) {
-      margin-top: 1rem;
-    }
-    button {
-      margin-top: 2rem;
-    }
-    span.error {
-      display: flex;
-      align-items: center;
-      color: $error;
-      font-size: 0.8rem;
-      width: 250px;
-      margin-top: 0.2rem;
-      i {
-        font-size: 18px;
-        margin-right: 0.2rem;
-      }
-    }
-  }
-}
+@import '../scss/form';
 </style>

@@ -50,6 +50,7 @@ module.exports = (app) => {
       handleError(res, error);
       return;
     }
+
     res.json(result);
   });
 
