@@ -29,6 +29,10 @@ div.main {
       font-size: 0.8rem;
       width: 250px;
       margin-top: 0.2rem;
+      &.center {
+        justify-content: center;
+        margin-top: 1rem;
+      }
       i {
         font-size: 18px;
         margin-right: 0.2rem;

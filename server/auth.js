@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const User = require('./models/User');
+const { generateToken, validateToken } = require('./token');
 
 const validate = require('./validate');
 
@@ -42,9 +43,12 @@ module.exports = (app) => {
     const data = { date, name, email, password: hashedPassword };
     const db = new User(data);
 
+    const token = generateToken(name, email);
+
     try {
       await db.save();
       result.success = true;
+      result.token = token;
       result.message = 'Successfully registered a new user.';
     } catch (error) {
       handleError(res, error);
@@ -52,6 +56,10 @@ module.exports = (app) => {
     }
 
     res.json(result);
+  });
+
+  app.post('/api/auth/validate', validateToken, (req, res) => {
+    res.json({ success: true });
   });
 
   function handleError(res, message) {

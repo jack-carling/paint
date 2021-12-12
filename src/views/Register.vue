@@ -27,6 +27,10 @@
         {{ errors.repeatPassword }}
       </span>
       <button :disabled="isLoading">Submit</button>
+      <span class="error center" v-if="errors.response">
+        <i class="material-icons">error</i>
+        {{ errors.response }}
+      </span>
     </form>
   </div>
 </template>
@@ -48,6 +52,7 @@ export default defineComponent({
         email: '',
         password: '',
         repeatPassword: '',
+        response: '',
       },
     };
   },
@@ -92,6 +97,13 @@ export default defineComponent({
         body: JSON.stringify(bodyData),
       });
       const data = await response.json();
+      if (data.success) {
+        localStorage.user = { name: this.name, email: this.email, token: data.token };
+        this.$emit('login', { name: this.name, email: this.email });
+        this.$router.push('/');
+      } else {
+        this.errors.response = data.message;
+      }
       this.isLoading = false;
     },
   },
