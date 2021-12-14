@@ -17,7 +17,7 @@ h1 {
   font-size: 3rem;
 }
 
-input {
+input:not([type='color']) {
   font-size: 1rem;
   appearance: none;
   border: 1px solid $blue;

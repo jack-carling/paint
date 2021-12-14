@@ -1,8 +1,8 @@
 <template>
-  <main>
+  <header>
     <h2>paint</h2>
     <button class="border" @click="handleClick" v-show="showButton">{{ buttonText }}</button>
-  </main>
+  </header>
 </template>
 
 <script lang="ts">
@@ -38,7 +38,7 @@ h2 {
   margin: 0;
   color: $white;
 }
-main {
+header {
   height: 60px;
   display: flex;
   padding: 1rem;
