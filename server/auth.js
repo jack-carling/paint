@@ -48,6 +48,8 @@ module.exports = (app) => {
     try {
       await db.save();
       result.success = true;
+      result.name = name;
+      result.email = email;
       result.token = token;
       result.message = 'Successfully registered a new user.';
     } catch (error) {

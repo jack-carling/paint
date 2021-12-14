@@ -9,7 +9,6 @@
 body {
   background-color: $white;
   margin: 0;
-  padding: 1rem;
 }
 
 h1 {
@@ -42,6 +41,9 @@ button {
   padding: 0.5rem 1.5rem;
   border-radius: 0.3rem;
   cursor: pointer;
+  &.border {
+    border: 1px solid $light-blue;
+  }
 }
 button:hover {
   opacity: 0.75;

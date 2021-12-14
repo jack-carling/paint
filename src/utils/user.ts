@@ -1,7 +1,6 @@
 export const validateToken = async () => {
   const token = localStorage.token;
   if (!token) return false;
-  console.log(token);
   const response: Response = await fetch('/api/auth/validate', {
     method: 'POST',
     body: JSON.stringify({ token }),
@@ -14,6 +13,7 @@ export const validateToken = async () => {
     return true;
   } else {
     delete localStorage.token;
+    delete localStorage.user;
     return false;
   }
 };

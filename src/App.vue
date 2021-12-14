@@ -1,5 +1,6 @@
 <template>
-  <main>
+  <Menu :user="user" />
+  <main id="root">
     <router-view @login="login" @logout="logout"></router-view>
   </main>
 </template>
@@ -9,6 +10,7 @@ import { defineComponent } from 'vue';
 import './scss/main.scss';
 
 import { validateToken } from './utils/user';
+import Menu from './components/Menu.vue';
 
 interface IUser {
   email: string;
@@ -16,6 +18,9 @@ interface IUser {
 }
 
 export default defineComponent({
+  components: {
+    Menu,
+  },
   data() {
     return {
       user: {
@@ -35,9 +40,17 @@ export default defineComponent({
     },
   },
   async mounted() {
-    const user = await validateToken();
+    const valid = await validateToken();
+    if (valid) {
+      this.user = JSON.parse(localStorage.user);
+      this.user.isLoggedIn = true;
+    }
   },
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+main#root {
+  padding: 1rem;
+}
+</style>

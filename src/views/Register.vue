@@ -98,7 +98,8 @@ export default defineComponent({
       });
       const data = await response.json();
       if (data.success) {
-        localStorage.user = { name: this.name, email: this.email, token: data.token };
+        localStorage.user = JSON.stringify({ name: data.name, email: data.email });
+        localStorage.token = data.token;
         this.$emit('login', { name: this.name, email: this.email });
         this.$router.push('/');
       } else {
