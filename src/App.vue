@@ -1,5 +1,5 @@
 <template>
-  <Menu :user="user" />
+  <Menu :user="user" @logout="logout" />
   <main id="root">
     <router-view @login="login" @logout="logout"></router-view>
   </main>
@@ -36,6 +36,7 @@ export default defineComponent({
     },
     logout() {
       delete localStorage.token;
+      delete localStorage.user;
       this.user = { name: '', email: '', isLoggedIn: false };
     },
   },

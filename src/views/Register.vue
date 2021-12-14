@@ -83,11 +83,7 @@ export default defineComponent({
       if (!checkEmail.success) return;
       if (!checkPassword.success) return;
 
-      console.log('Handling registering...');
-      console.log(this.name, this.email, this.password);
       const bodyData = { name: this.name, email: this.email, password: this.password };
-      console.log(bodyData);
-
       this.isLoading = true;
       const response: Response = await fetch('/api/auth/register', {
         method: 'POST',

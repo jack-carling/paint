@@ -25,6 +25,8 @@ export default defineComponent({
     handleClick() {
       if (this.buttonText === 'Login') {
         this.$router.push('/login');
+      } else {
+        this.$emit('logout');
       }
     },
   },
