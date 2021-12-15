@@ -1,5 +1,6 @@
 <template>
   <section ref="main">
+    <input type="text" id="title" v-model="title" />
     <canvas
       @mousedown="handleDown"
       @mouseup="handleUp"
@@ -32,6 +33,14 @@
           <i class="material-icons" :style="{ opacity: opacityRedo }">redo</i>
         </div>
       </article>
+      <article>
+        <div class="button">
+          <i class="material-icons">save</i>
+        </div>
+        <div class="button" @click="handleDownload">
+          <i class="material-icons">file_download</i>
+        </div>
+      </article>
     </section>
   </section>
 </template>
@@ -49,6 +58,7 @@ interface IHistory {
 export default defineComponent({
   data() {
     return {
+      title: 'Untitled',
       draw: false,
       stroke: 1,
       color: '#000000',
@@ -113,8 +123,13 @@ export default defineComponent({
       const main = this.$refs.main as HTMLElement;
       canvas.width = main.clientWidth;
       canvas.height = 400;
+      const context = canvas.getContext('2d');
+      if (!context) return;
+      context.fillStyle = '#FFFFFF';
+      context.fillRect(0, 0, canvas.width, canvas.height);
     },
     handleUndo() {
+      if (!this.history.length) return;
       this.redo.push(this.history[this.history.length - 1]);
       this.history.splice(-1, 1);
       this.drawUndo();
@@ -123,7 +138,8 @@ export default defineComponent({
       const canvas = this.$refs.canvas as HTMLCanvasElement;
       const context = canvas.getContext('2d');
       if (!context) return;
-      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = '#FFFFFF';
+      context.fillRect(0, 0, canvas.width, canvas.height);
       context.lineCap = 'round';
       context.lineJoin = 'round';
 
@@ -170,6 +186,18 @@ export default defineComponent({
 
       this.history.push(data);
       this.redo.splice(-1, 1);
+    },
+    handleDownload() {
+      const canvas = this.$refs.canvas as HTMLCanvasElement;
+      const data = canvas.toDataURL('image/jpeg', 1.0);
+      const a = document.createElement('a');
+      a.href = data;
+      if (!this.title.trim().length) {
+        a.download = 'Untitled.jpg';
+      } else {
+        a.download = `${this.title.trim()}.jpg`;
+      }
+      a.click();
     },
   },
 });
@@ -240,5 +268,12 @@ section.tools {
       opacity: 0;
     }
   }
+}
+input#title {
+  border: none;
+  outline: none;
+  padding-left: 0;
+  width: 100%;
+  background-color: $white;
 }
 </style>

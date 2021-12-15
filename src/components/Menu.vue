@@ -1,6 +1,7 @@
 <template>
   <header>
-    <h2>paint</h2>
+    <h2 @click="$router.push('/')">paint</h2>
+    <button class="border" @click="$router.push('/register')" v-show="!showButton">Register</button>
     <button class="border" @click="handleClick" v-show="showButton">{{ buttonText }}</button>
   </header>
 </template>
@@ -35,6 +36,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 h2 {
+  cursor: pointer;
   margin: 0;
   color: $white;
 }
