@@ -28,6 +28,9 @@
         <div class="button" @click="handleUndo">
           <i class="material-icons" :style="{ opacity: opacityUndo }">undo</i>
         </div>
+        <div class="button" @click="handleRedo">
+          <i class="material-icons" :style="{ opacity: opacityRedo }">redo</i>
+        </div>
       </article>
     </section>
   </section>
@@ -50,6 +53,7 @@ export default defineComponent({
       stroke: 1,
       color: '#000000',
       history: [] as IHistory[][],
+      redo: [] as IHistory[][],
     };
   },
   mounted() {
@@ -62,6 +66,12 @@ export default defineComponent({
   computed: {
     opacityUndo() {
       if (this.history.length) {
+        return 1;
+      }
+      return 0.5;
+    },
+    opacityRedo() {
+      if (this.redo.length) {
         return 1;
       }
       return 0.5;
@@ -105,7 +115,11 @@ export default defineComponent({
       canvas.height = 400;
     },
     handleUndo() {
+      this.redo.push(this.history[this.history.length - 1]);
       this.history.splice(-1, 1);
+      this.drawUndo();
+    },
+    drawUndo() {
       const canvas = this.$refs.canvas as HTMLCanvasElement;
       const context = canvas.getContext('2d');
       if (!context) return;
@@ -128,6 +142,34 @@ export default defineComponent({
           context.moveTo(x!, y!);
         });
       });
+    },
+    handleRedo() {
+      const data = this.redo[this.redo.length - 1];
+      if (!data) return;
+
+      const canvas = this.$refs.canvas as HTMLCanvasElement;
+      const context = canvas.getContext('2d');
+      if (!context) return;
+      context.lineCap = 'round';
+      context.lineJoin = 'round';
+
+      const [{ color, size }, { x, y }] = data;
+
+      context.strokeStyle = color!;
+      context.lineWidth = size!;
+      context.moveTo(x!, y!);
+      context.beginPath();
+
+      data.forEach((move) => {
+        const { x, y } = move;
+        context.lineTo(x!, y!);
+        context.closePath();
+        context.stroke();
+        context.moveTo(x!, y!);
+      });
+
+      this.history.push(data);
+      this.redo.splice(-1, 1);
     },
   },
 });
