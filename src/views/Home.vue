@@ -9,6 +9,7 @@
         @mousemove="handleDraw"
         ref="canvas"
         :class="{ move: tool === 'move', moving: move }"
+        :style="{ transform: `scale(${zoom})` }"
       ></canvas>
     </section>
     <section class="tools">
@@ -41,6 +42,15 @@
         <div class="button" @click="handleRedo">
           <i class="material-icons" :style="{ opacity: opacityRedo }">redo</i>
         </div>
+      </article>
+      <article>
+        <div class="button" @click="handleZoomOut">
+          <i class="material-icons">zoom_out</i>
+        </div>
+        <div class="button" @click="handleZoomIn">
+          <i class="material-icons">zoom_in</i>
+        </div>
+        <span>{{ zoomPercentage }}</span>
       </article>
       <article>
         <div class="button">
@@ -88,6 +98,7 @@ export default defineComponent({
       } as IScrollPosition,
       history: [] as IHistory[][],
       redo: [] as IHistory[][],
+      zoom: 1,
     };
   },
   mounted() {
@@ -98,17 +109,20 @@ export default defineComponent({
     window.removeEventListener('keyup', this.handleKey);
   },
   computed: {
-    opacityUndo() {
+    opacityUndo(): number {
       if (this.history.length) {
         return 1;
       }
       return 0.5;
     },
-    opacityRedo() {
+    opacityRedo(): number {
       if (this.redo.length) {
         return 1;
       }
       return 0.5;
+    },
+    zoomPercentage(): string {
+      return Math.round(this.zoom * 100).toString() + '%';
     },
   },
   methods: {
@@ -248,6 +262,14 @@ export default defineComponent({
       }
       a.click();
     },
+    handleZoomIn() {
+      const value = Number((this.zoom + 0.1).toFixed(1));
+      if (value !== 2.6) this.zoom = value;
+    },
+    handleZoomOut() {
+      const value = Number((this.zoom - 0.1).toFixed(1));
+      if (value !== 0.9) this.zoom = value;
+    },
   },
 });
 </script>
@@ -255,6 +277,8 @@ export default defineComponent({
 <style lang="scss" scoped>
 canvas {
   cursor: crosshair;
+  transform-origin: top left;
+  transition: transform 0.2s linear;
 }
 canvas.move {
   cursor: grab;
@@ -273,11 +297,16 @@ section.tools {
     border: 1px solid $gray;
     align-items: center;
     border-radius: 0.5rem;
+    span {
+      margin-left: 0.5rem;
+      font-family: 'Roboto Mono', monospace;
+    }
     i {
       color: $gray;
       margin-right: 0.5rem;
     }
     div.button {
+      user-select: none;
       width: 30px;
       height: 30px;
       border: 1px solid $gray;
