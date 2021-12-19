@@ -1,13 +1,16 @@
 <template>
   <section ref="main">
     <input type="text" id="title" v-model="title" />
-    <canvas
-      @mousedown="handleDown"
-      @mouseup="handleUp"
-      @mouseleave="handleUp"
-      @mousemove="handleDraw"
-      ref="canvas"
-    ></canvas>
+    <section class="canvas" ref="canvasContainer">
+      <canvas
+        @mousedown="handleDown"
+        @mouseup="handleUp"
+        @mouseleave="handleUp"
+        @mousemove="handleDraw"
+        ref="canvas"
+        :class="{ move: tool === 'move', moving: move }"
+      ></canvas>
+    </section>
     <section class="tools">
       <article>
         <i class="material-icons">palette</i>
@@ -26,6 +29,12 @@
         </div>
       </article>
       <article>
+        <div class="button" @click="tool = 'brush'" :class="{ selected: tool === 'brush' }">
+          <i class="material-icons">brush</i>
+        </div>
+        <div class="button" @click="tool = 'move'" :class="{ selected: tool === 'move' }">
+          <i class="material-icons">pan_tool</i>
+        </div>
         <div class="button" @click="handleUndo">
           <i class="material-icons" :style="{ opacity: opacityUndo }">undo</i>
         </div>
@@ -55,23 +64,38 @@ interface IHistory {
   size?: number;
 }
 
+interface IScrollPosition {
+  top: number;
+  left: number;
+  x: number;
+  y: number;
+}
+
 export default defineComponent({
   data() {
     return {
       title: 'Untitled',
       draw: false,
+      move: false,
+      tool: 'brush',
       stroke: 1,
       color: '#000000',
+      scrollPosition: {
+        top: 0,
+        left: 0,
+        x: 0,
+        y: 0,
+      } as IScrollPosition,
       history: [] as IHistory[][],
       redo: [] as IHistory[][],
     };
   },
   mounted() {
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener('keyup', this.handleKey);
     this.handleResize();
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener('keyup', this.handleKey);
   },
   computed: {
     opacityUndo() {
@@ -89,6 +113,7 @@ export default defineComponent({
   },
   methods: {
     handleDraw(event: MouseEvent) {
+      if (this.tool === 'move') return this.handleMove(event);
       const canvas = this.$refs.canvas as HTMLCanvasElement;
       const context = canvas.getContext('2d');
       if (!context) return;
@@ -107,6 +132,18 @@ export default defineComponent({
       }
     },
     handleDown(event: MouseEvent) {
+      if (this.tool === 'move') {
+        const canvasContainer = this.$refs.canvasContainer as HTMLElement;
+        this.scrollPosition = {
+          top: canvasContainer.scrollTop,
+          left: canvasContainer.scrollLeft,
+          x: event.clientX,
+          y: event.clientY,
+        };
+
+        this.move = true;
+        return;
+      }
       this.history.push([{ color: this.color, size: this.stroke }]);
       this.draw = true;
       const canvas = this.$refs.canvas as HTMLCanvasElement;
@@ -116,7 +153,16 @@ export default defineComponent({
       context.beginPath();
     },
     handleUp() {
+      if (this.tool === 'move') return (this.move = false);
       this.draw = false;
+    },
+    handleMove(event: MouseEvent) {
+      if (!this.move) return;
+      const dx = event.clientX - this.scrollPosition.x;
+      const dy = event.clientY - this.scrollPosition.y;
+      const canvasContainer = this.$refs.canvasContainer as HTMLElement;
+      canvasContainer.scrollTop = this.scrollPosition.top - dy;
+      canvasContainer.scrollLeft = this.scrollPosition.left - dx;
     },
     handleResize() {
       const canvas = this.$refs.canvas as HTMLCanvasElement;
@@ -127,6 +173,9 @@ export default defineComponent({
       if (!context) return;
       context.fillStyle = '#FFFFFF';
       context.fillRect(0, 0, canvas.width, canvas.height);
+    },
+    handleKey(event: KeyboardEvent) {
+      console.log(event);
     },
     handleUndo() {
       if (!this.history.length) return;
@@ -205,8 +254,13 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 canvas {
-  border: 1px solid $gray;
   cursor: crosshair;
+}
+canvas.move {
+  cursor: grab;
+}
+canvas.moving {
+  cursor: grabbing;
 }
 section.tools {
   margin-top: 0.5rem;
@@ -232,6 +286,7 @@ section.tools {
       place-items: center;
       cursor: pointer;
       i {
+        font-size: 20px;
         margin: 0;
         color: $black;
       }
@@ -275,5 +330,10 @@ input#title {
   padding-left: 0;
   width: 100%;
   background-color: $white;
+}
+section.canvas {
+  overflow: hidden;
+  border: 1px solid $gray;
+  background-color: #ffffff;
 }
 </style>
