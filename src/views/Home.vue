@@ -189,7 +189,27 @@ export default defineComponent({
       context.fillRect(0, 0, canvas.width, canvas.height);
     },
     handleKey(event: KeyboardEvent) {
-      console.log(event);
+      const { tagName } = event.target as HTMLElement;
+      if (tagName === 'INPUT') return;
+      if (event.code === 'KeyZ' && event.ctrlKey) return this.handleUndo();
+      if (event.code === 'KeyY' && event.ctrlKey) return this.handleRedo();
+      switch (event.code) {
+        case 'Digit1':
+          return (this.stroke = 1);
+        case 'Digit2':
+          return (this.stroke = 5);
+        case 'Digit3':
+          return (this.stroke = 10);
+        case 'Space':
+          if (this.tool === 'brush') return (this.tool = 'move');
+          return (this.tool = 'brush');
+        case 'KeyZ':
+          return this.handleZoomIn();
+        case 'KeyX':
+          return this.handleZoomOut();
+        default:
+          return;
+      }
     },
     handleUndo() {
       if (!this.history.length) return;
@@ -289,11 +309,12 @@ canvas.moving {
 section.tools {
   margin-top: 0.5rem;
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   align-items: center;
   article {
     display: flex;
     padding: 0.5rem;
-    margin-right: 0.5rem;
     border: 1px solid $gray;
     align-items: center;
     border-radius: 0.5rem;
@@ -364,5 +385,6 @@ section.canvas {
   overflow: hidden;
   border: 1px solid $gray;
   background-color: #ffffff;
+  max-width: max-content;
 }
 </style>
