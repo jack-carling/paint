@@ -1,7 +1,7 @@
 <template>
   <Menu :user="user" @logout="logout" />
   <main id="root">
-    <router-view @login="login" @logout="logout"></router-view>
+    <router-view :user="user" @login="login" @logout="logout"></router-view>
   </main>
 </template>
 
@@ -10,12 +10,8 @@ import { defineComponent } from 'vue';
 import './scss/main.scss';
 
 import { validateToken } from './utils/user';
+import { IUser } from './utils/interfaces';
 import Menu from './components/Menu.vue';
-
-interface IUser {
-  email: string;
-  name: string;
-}
 
 export default defineComponent({
   components: {
@@ -27,7 +23,7 @@ export default defineComponent({
         name: '',
         email: '',
         isLoggedIn: false,
-      },
+      } as IUser,
     };
   },
   methods: {

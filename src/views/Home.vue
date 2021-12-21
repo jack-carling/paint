@@ -1,5 +1,6 @@
 <template>
   <section ref="main">
+    <Modal :loading="modal.loading" :text="modal.text" v-if="modal.show" @close-modal="modal.show = false" />
     <input type="text" id="title" v-model="title" />
     <section class="canvas" ref="canvasContainer">
       <canvas
@@ -53,7 +54,7 @@
         <span>{{ zoomPercentage }}</span>
       </article>
       <article>
-        <div class="button">
+        <div class="button" @click="handleSave">
           <i class="material-icons">save</i>
         </div>
         <div class="button" @click="handleDownload">
@@ -65,7 +66,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, PropType } from 'vue';
+import { IUser } from '../utils/interfaces';
+import Modal from '../components/Modal.vue';
 
 interface IHistory {
   x?: number;
@@ -81,7 +84,22 @@ interface IScrollPosition {
   y: number;
 }
 
+interface IModal {
+  loading: boolean;
+  show: boolean;
+  error: boolean;
+  text: string;
+}
+
 export default defineComponent({
+  components: {
+    Modal,
+  },
+  props: {
+    user: {
+      type: Object as PropType<IUser>,
+    },
+  },
   data() {
     return {
       title: 'Untitled',
@@ -99,6 +117,12 @@ export default defineComponent({
       history: [] as IHistory[][],
       redo: [] as IHistory[][],
       zoom: 1,
+      modal: {
+        loading: false,
+        show: false,
+        error: false,
+        text: '',
+      } as IModal,
     };
   },
   mounted() {
@@ -154,17 +178,18 @@ export default defineComponent({
           x: event.clientX,
           y: event.clientY,
         };
-
         this.move = true;
         return;
       }
       this.history.push([{ color: this.color, size: this.stroke }]);
+      this.redo = [];
       this.draw = true;
       const canvas = this.$refs.canvas as HTMLCanvasElement;
       const context = canvas.getContext('2d');
       if (!context) return;
       context.moveTo(event.offsetX, event.offsetY);
       context.beginPath();
+      this.handleDraw(event);
     },
     handleUp() {
       if (this.tool === 'move') return (this.move = false);
@@ -225,14 +250,12 @@ export default defineComponent({
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.lineCap = 'round';
       context.lineJoin = 'round';
-
       this.history.forEach((stroke) => {
         const [{ color, size }, { x, y }] = stroke;
         context.strokeStyle = color!;
         context.lineWidth = size!;
         context.moveTo(x!, y!);
         context.beginPath();
-
         stroke.forEach((move) => {
           const { x, y } = move;
           context.lineTo(x!, y!);
@@ -245,20 +268,16 @@ export default defineComponent({
     handleRedo() {
       const data = this.redo[this.redo.length - 1];
       if (!data) return;
-
       const canvas = this.$refs.canvas as HTMLCanvasElement;
       const context = canvas.getContext('2d');
       if (!context) return;
       context.lineCap = 'round';
       context.lineJoin = 'round';
-
       const [{ color, size }, { x, y }] = data;
-
       context.strokeStyle = color!;
       context.lineWidth = size!;
       context.moveTo(x!, y!);
       context.beginPath();
-
       data.forEach((move) => {
         const { x, y } = move;
         context.lineTo(x!, y!);
@@ -266,13 +285,12 @@ export default defineComponent({
         context.stroke();
         context.moveTo(x!, y!);
       });
-
       this.history.push(data);
       this.redo.splice(-1, 1);
     },
     handleDownload() {
       const canvas = this.$refs.canvas as HTMLCanvasElement;
-      const data = canvas.toDataURL('image/jpeg', 1.0);
+      const data = canvas.toDataURL('image/jpeg', 1);
       const a = document.createElement('a');
       a.href = data;
       if (!this.title.trim().length) {
@@ -289,6 +307,19 @@ export default defineComponent({
     handleZoomOut() {
       const value = Number((this.zoom - 0.1).toFixed(1));
       if (value !== 0.9) this.zoom = value;
+    },
+    async handleSave() {
+      this.modal.show = true;
+
+      if (!this.user?.isLoggedIn) return (this.modal.text = 'Please login to save projects.');
+      // handle user not logged in
+      this.modal.loading = true;
+      this.modal.text = 'Successfully saved project.';
+      const response: Response = await fetch('/api/save', { method: 'POST' });
+      const data = await response.json();
+      console.log(data);
+
+      this.modal.loading = false;
     },
   },
 });
@@ -307,6 +338,7 @@ canvas.moving {
   cursor: grabbing;
 }
 section.tools {
+  user-select: none;
   margin-top: 0.5rem;
   display: flex;
   flex-wrap: wrap;
@@ -327,7 +359,6 @@ section.tools {
       margin-right: 0.5rem;
     }
     div.button {
-      user-select: none;
       width: 30px;
       height: 30px;
       border: 1px solid $gray;

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const Canvas = new mongoose.Schema({
-  author: Number,
+  author: mongoose.Types.ObjectId,
+  title: String,
   created: Number,
   edited: Number,
   canvas: String,
