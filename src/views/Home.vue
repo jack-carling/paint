@@ -1,68 +1,70 @@
 <template>
-  <section ref="main">
-    <Modal :loading="modal.loading" :text="modal.text" v-if="modal.show" @close-modal="modal.show = false" />
-    <input type="text" id="title" v-model="title" />
-    <section class="canvas" ref="canvasContainer">
-      <canvas
-        @mousedown="handleDown"
-        @mouseup="handleUp"
-        @mouseleave="handleUp"
-        @mousemove="handleDraw"
-        ref="canvas"
-        :class="{ move: tool === 'move', moving: move }"
-        :style="{ transform: `scale(${zoom})` }"
-      ></canvas>
-    </section>
-    <section class="tools">
-      <article>
-        <i class="material-icons">palette</i>
-        <div class="color" :style="{ backgroundColor: color }"><input type="color" v-model="color" /></div>
-      </article>
-      <article>
-        <i class="material-icons">brush</i>
-        <div class="button" @click="stroke = 1" :class="{ selected: stroke === 1 }">
-          <div class="brush small" :style="{ backgroundColor: color }"></div>
-        </div>
-        <div class="button" @click="stroke = 5" :class="{ selected: stroke === 5 }">
-          <div class="brush medium" :style="{ backgroundColor: color }"></div>
-        </div>
-        <div class="button" @click="stroke = 10" :class="{ selected: stroke === 10 }">
-          <div class="brush large" :style="{ backgroundColor: color }"></div>
-        </div>
-      </article>
-      <article>
-        <div class="button" @click="tool = 'brush'" :class="{ selected: tool === 'brush' }">
+  <main ref="main">
+    <section class="main">
+      <Modal :loading="modal.loading" :text="modal.text" v-if="modal.show" @close-modal="modal.show = false" />
+      <input type="text" id="title" v-model="title" @blur="handleTitleBlur" />
+      <section class="canvas" ref="canvasContainer">
+        <canvas
+          @mousedown="handleDown"
+          @mouseup="handleUp"
+          @mouseleave="handleUp"
+          @mousemove="handleDraw"
+          ref="canvas"
+          :class="{ move: tool === 'move', moving: move }"
+          :style="{ transform: `scale(${zoom})` }"
+        ></canvas>
+      </section>
+      <section class="tools">
+        <article>
+          <i class="material-icons">palette</i>
+          <div class="color" :style="{ backgroundColor: color }"><input type="color" v-model="color" /></div>
+        </article>
+        <article>
           <i class="material-icons">brush</i>
-        </div>
-        <div class="button" @click="tool = 'move'" :class="{ selected: tool === 'move' }">
-          <i class="material-icons">pan_tool</i>
-        </div>
-        <div class="button" @click="handleUndo">
-          <i class="material-icons" :style="{ opacity: opacityUndo }">undo</i>
-        </div>
-        <div class="button" @click="handleRedo">
-          <i class="material-icons" :style="{ opacity: opacityRedo }">redo</i>
-        </div>
-      </article>
-      <article>
-        <div class="button" @click="handleZoomOut">
-          <i class="material-icons">zoom_out</i>
-        </div>
-        <div class="button" @click="handleZoomIn">
-          <i class="material-icons">zoom_in</i>
-        </div>
-        <span>{{ zoomPercentage }}</span>
-      </article>
-      <article>
-        <div class="button" @click="handleSave">
-          <i class="material-icons">save</i>
-        </div>
-        <div class="button" @click="handleDownload">
-          <i class="material-icons">file_download</i>
-        </div>
-      </article>
+          <div class="button" @click="stroke = 1" :class="{ selected: stroke === 1 }">
+            <div class="brush small" :style="{ backgroundColor: color }"></div>
+          </div>
+          <div class="button" @click="stroke = 5" :class="{ selected: stroke === 5 }">
+            <div class="brush medium" :style="{ backgroundColor: color }"></div>
+          </div>
+          <div class="button" @click="stroke = 10" :class="{ selected: stroke === 10 }">
+            <div class="brush large" :style="{ backgroundColor: color }"></div>
+          </div>
+        </article>
+        <article>
+          <div class="button" @click="tool = 'brush'" :class="{ selected: tool === 'brush' }">
+            <i class="material-icons">brush</i>
+          </div>
+          <div class="button" @click="tool = 'move'" :class="{ selected: tool === 'move' }">
+            <i class="material-icons">pan_tool</i>
+          </div>
+          <div class="button" @click="handleUndo">
+            <i class="material-icons" :style="{ opacity: opacityUndo }">undo</i>
+          </div>
+          <div class="button" @click="handleRedo">
+            <i class="material-icons" :style="{ opacity: opacityRedo }">redo</i>
+          </div>
+        </article>
+        <article>
+          <div class="button" @click="handleZoomOut">
+            <i class="material-icons">zoom_out</i>
+          </div>
+          <div class="button" @click="handleZoomIn">
+            <i class="material-icons">zoom_in</i>
+          </div>
+          <span>{{ zoomPercentage }}</span>
+        </article>
+        <article>
+          <div class="button" @click="handleSave">
+            <i class="material-icons">save</i>
+          </div>
+          <div class="button" @click="handleDownload">
+            <i class="material-icons">file_download</i>
+          </div>
+        </article>
+      </section>
     </section>
-  </section>
+  </main>
 </template>
 
 <script lang="ts">
@@ -293,11 +295,7 @@ export default defineComponent({
       const data = canvas.toDataURL('image/jpeg', 1);
       const a = document.createElement('a');
       a.href = data;
-      if (!this.title.trim().length) {
-        a.download = 'Untitled.jpg';
-      } else {
-        a.download = `${this.title.trim()}.jpg`;
-      }
+      a.download = `${this.title}.jpg`;
       a.click();
     },
     handleZoomIn() {
@@ -307,6 +305,10 @@ export default defineComponent({
     handleZoomOut() {
       const value = Number((this.zoom - 0.1).toFixed(1));
       if (value !== 0.9) this.zoom = value;
+    },
+    handleTitleBlur() {
+      this.title = this.title.trim();
+      if (!this.title.length) this.title = 'Untitled';
     },
     async handleSave() {
       this.modal.show = true;
@@ -417,5 +419,12 @@ section.canvas {
   border: 1px solid $gray;
   background-color: #ffffff;
   max-width: max-content;
+}
+main {
+  display: flex;
+  justify-content: center;
+}
+section.main {
+  max-width: 100%;
 }
 </style>
