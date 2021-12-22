@@ -34,6 +34,7 @@ export default defineComponent({
       delete localStorage.token;
       delete localStorage.user;
       this.user = { name: '', email: '', isLoggedIn: false };
+      location.reload();
     },
   },
   async mounted() {

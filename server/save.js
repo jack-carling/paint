@@ -3,7 +3,7 @@ const User = require('./models/User');
 const { validateToken } = require('./token');
 
 module.exports = (app) => {
-  app.post('/api/save', validateToken, async (req, res) => {
+  app.post('/api/projects/save', validateToken, async (req, res) => {
     const result = { success: false, message: '' };
     const { id, email, title, base64, width, height, public, access } = req.body;
 
@@ -37,8 +37,6 @@ module.exports = (app) => {
     }
 
     const [exists] = await Canvas.find({ id });
-
-    console.log(exists);
 
     if (!exists) {
       const date = Date.now();
@@ -74,7 +72,7 @@ module.exports = (app) => {
         access,
       };
       try {
-        const test = await Canvas.findOneAndUpdate({ id }, { ...data });
+        await Canvas.findOneAndUpdate({ id }, { ...data });
         result.success = true;
         result.message = 'Successfully updated project.';
       } catch (error) {
@@ -82,6 +80,37 @@ module.exports = (app) => {
       }
     }
 
+    res.json(result);
+  });
+
+  app.get('/api/projects', validateToken, async (req, res) => {
+    const result = { success: false, message: '', data: [] };
+    const { email } = req.query;
+    try {
+      const projects = await Canvas.find({ email }).sort({ edited: -1 });
+      result.success = true;
+      result.message = 'Successfully fetched all projects.';
+      if (projects) {
+        result.data = projects;
+      }
+    } catch (error) {
+      return handleError(res, error);
+    }
+    res.json(result);
+  });
+
+  app.get('/api/projects/:id', async (req, res) => {
+    const result = { success: false, message: '', data: {} };
+    const { id } = req.params;
+    try {
+      const [project] = await Canvas.find({ id });
+      if (!project) return handleError(res, 'No project with this ID.');
+      result.success = true;
+      result.message = 'Successfully fetched a project.';
+      result.data = project;
+    } catch (error) {
+      return handleError(res, error);
+    }
     res.json(result);
   });
 

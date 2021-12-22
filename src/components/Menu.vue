@@ -1,17 +1,23 @@
 <template>
   <header>
     <h2 @click="$router.push('/')">paint</h2>
-    <button class="border" @click="$router.push('/register')" v-show="!showButton">Register</button>
-    <button class="border" @click="handleClick" v-show="showButton">{{ buttonText }}</button>
+    <div class="buttons">
+      <button class="border" @click="$router.push('/projects')" v-show="user?.isLoggedIn">Projects</button>
+      <button class="border" @click="$router.push('/register')" v-show="!showButton">Register</button>
+      <button class="border" @click="handleClick" v-show="showButton">{{ buttonText }}</button>
+    </div>
   </header>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, PropType } from 'vue';
+import { IUser } from '../utils/interfaces';
 
 export default defineComponent({
   props: {
-    user: Object,
+    user: {
+      type: Object as PropType<IUser>,
+    },
   },
   computed: {
     buttonText() {
@@ -47,5 +53,9 @@ header {
   justify-content: space-between;
   align-items: center;
   background-color: $blue;
+}
+div.buttons {
+  display: flex;
+  gap: 1rem;
 }
 </style>

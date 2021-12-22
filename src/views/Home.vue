@@ -130,9 +130,13 @@ export default defineComponent({
     };
   },
   mounted() {
-    this.id = uuidv4();
+    if (this.$route.path === '/') {
+      this.id = uuidv4();
+      this.handleResize();
+    } else {
+      this.loadCanvas();
+    }
     window.addEventListener('keyup', this.handleKey);
-    this.handleResize();
   },
   beforeUnmount() {
     window.removeEventListener('keyup', this.handleKey);
@@ -208,11 +212,21 @@ export default defineComponent({
       canvasContainer.scrollTop = this.scrollPosition.top - dy;
       canvasContainer.scrollLeft = this.scrollPosition.left - dx;
     },
-    handleResize() {
+    handleResize(width: number = 0, height: number = 0) {
       const canvas = this.$refs.canvas as HTMLCanvasElement;
       const main = this.$refs.main as HTMLElement;
-      canvas.width = main.clientWidth;
-      canvas.height = 400;
+
+      if (!width) {
+        canvas.width = main.clientWidth;
+      } else {
+        canvas.width = width;
+      }
+
+      if (!height) {
+        canvas.height = 400;
+      } else {
+        canvas.height = height;
+      }
       const context = canvas.getContext('2d');
       if (!context) return;
       context.fillStyle = '#FFFFFF';
@@ -330,7 +344,7 @@ export default defineComponent({
         access: [],
       };
 
-      const response: Response = await fetch('/api/save', {
+      const response: Response = await fetch('/api/projects/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -341,6 +355,25 @@ export default defineComponent({
       const data = await response.json();
       this.modal.text = data.message;
       this.modal.loading = false;
+    },
+    async loadCanvas() {
+      const id = this.$route.path.split('/')[1];
+      this.id = id;
+      const response: Response = await fetch(`/api/projects/${id}`);
+      const data = await response.json();
+      if (data.success) {
+        const { width, height, base64 } = data.data;
+        this.handleResize(width, height);
+
+        const canvas = this.$refs.canvas as HTMLCanvasElement;
+        const context = canvas.getContext('2d');
+
+        const image = new Image();
+        image.addEventListener('load', () => {
+          context?.drawImage(image, 0, 0);
+        });
+        image.src = base64;
+      }
     },
   },
 });
