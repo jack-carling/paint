@@ -69,6 +69,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
+import { v4 as uuidv4 } from 'uuid';
 import { IUser } from '../utils/interfaces';
 import Modal from '../components/Modal.vue';
 
@@ -105,6 +106,7 @@ export default defineComponent({
   data() {
     return {
       title: 'Untitled',
+      id: '',
       draw: false,
       move: false,
       tool: 'brush',
@@ -128,6 +130,7 @@ export default defineComponent({
     };
   },
   mounted() {
+    this.id = uuidv4();
     window.addEventListener('keyup', this.handleKey);
     this.handleResize();
   },
@@ -312,15 +315,31 @@ export default defineComponent({
     },
     async handleSave() {
       this.modal.show = true;
-
       if (!this.user?.isLoggedIn) return (this.modal.text = 'Please login to save projects.');
-      // handle user not logged in
-      this.modal.loading = true;
-      this.modal.text = 'Successfully saved project.';
-      const response: Response = await fetch('/api/save', { method: 'POST' });
-      const data = await response.json();
-      console.log(data);
 
+      this.modal.loading = true;
+      const canvas = this.$refs.canvas as HTMLCanvasElement;
+      const bodyData = {
+        id: this.id,
+        email: this.user.email,
+        title: this.title,
+        base64: canvas.toDataURL(),
+        width: canvas.width,
+        height: canvas.height,
+        public: false,
+        access: [],
+      };
+
+      const response: Response = await fetch('/api/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.token}`,
+        },
+        body: JSON.stringify(bodyData),
+      });
+      const data = await response.json();
+      this.modal.text = data.message;
       this.modal.loading = false;
     },
   },

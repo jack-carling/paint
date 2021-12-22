@@ -3,9 +3,8 @@ export const validateToken = async () => {
   if (!token) return false;
   const response: Response = await fetch('/api/auth/validate', {
     method: 'POST',
-    body: JSON.stringify({ token }),
     headers: {
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
   });
   const data = await response.json();

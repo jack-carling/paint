@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 
 const Canvas = new mongoose.Schema({
-  author: mongoose.Types.ObjectId,
+  id: String,
+  email: String,
   title: String,
   created: Number,
   edited: Number,
-  canvas: String,
+  base64: String,
   width: Number,
   height: Number,
   public: Boolean,
