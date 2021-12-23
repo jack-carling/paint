@@ -4,6 +4,7 @@
     <hr />
 
     <span v-if="!user?.isLoggedIn">Login or register to save and view all your projects here!</span>
+    <span v-if="user?.isLoggedIn && !projects.length">All your saved projects will be stored here!</span>
 
     <div class="loading" v-if="loading">
       <Loader />
