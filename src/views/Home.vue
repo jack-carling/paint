@@ -90,7 +90,6 @@ interface IScrollPosition {
 interface IModal {
   loading: boolean;
   show: boolean;
-  error: boolean;
   text: string;
 }
 
@@ -124,7 +123,6 @@ export default defineComponent({
       modal: {
         loading: false,
         show: false,
-        error: false,
         text: '',
       } as IModal,
     };
@@ -373,6 +371,11 @@ export default defineComponent({
           context?.drawImage(image, 0, 0);
         });
         image.src = base64;
+      } else {
+        this.handleResize();
+        this.modal.text = data.message;
+        this.modal.show = true;
+        this.$router.push('/');
       }
     },
   },
