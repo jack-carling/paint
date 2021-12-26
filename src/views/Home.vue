@@ -117,7 +117,7 @@ export default defineComponent({
         x: 0,
         y: 0,
       } as IScrollPosition,
-      history: [] as IHistory[][],
+      undo: [] as IHistory[][],
       redo: [] as IHistory[][],
       zoom: 1,
       modal: {
@@ -141,7 +141,7 @@ export default defineComponent({
   },
   computed: {
     opacityUndo(): number {
-      if (this.history.length) {
+      if (this.undo.length) {
         return 1;
       }
       return 0.5;
@@ -167,7 +167,7 @@ export default defineComponent({
       context.lineCap = 'round';
       context.lineJoin = 'round';
       if (this.draw) {
-        this.history[this.history.length - 1].push({ x: event.offsetX, y: event.offsetY });
+        this.undo[this.undo.length - 1].push({ x: event.offsetX, y: event.offsetY });
         context.lineTo(event.offsetX, event.offsetY);
         context.closePath();
         context.stroke();
@@ -188,7 +188,7 @@ export default defineComponent({
         this.move = true;
         return;
       }
-      this.history.push([{ color: this.color, size: this.stroke }]);
+      this.undo.push([{ color: this.color, size: this.stroke }]);
       this.redo = [];
       this.draw = true;
       const canvas = this.$refs.canvas as HTMLCanvasElement;
@@ -254,9 +254,9 @@ export default defineComponent({
       }
     },
     handleUndo() {
-      if (!this.history.length) return;
-      this.redo.push(this.history[this.history.length - 1]);
-      this.history.splice(-1, 1);
+      if (!this.undo.length) return;
+      this.redo.push(this.undo[this.undo.length - 1]);
+      this.undo.splice(-1, 1);
       this.drawUndo();
     },
     drawUndo() {
@@ -267,7 +267,7 @@ export default defineComponent({
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.lineCap = 'round';
       context.lineJoin = 'round';
-      this.history.forEach((stroke) => {
+      this.undo.forEach((stroke) => {
         const [{ color, size }, { x, y }] = stroke;
         context.strokeStyle = color!;
         context.lineWidth = size!;
@@ -302,7 +302,7 @@ export default defineComponent({
         context.stroke();
         context.moveTo(x!, y!);
       });
-      this.history.push(data);
+      this.undo.push(data);
       this.redo.splice(-1, 1);
     },
     handleDownload() {
