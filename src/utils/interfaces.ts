@@ -3,3 +3,8 @@ export interface IUser {
   name: string;
   isLoggedIn: boolean;
 }
+
+export interface ISize {
+  width: number;
+  height: number;
+}

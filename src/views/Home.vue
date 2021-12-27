@@ -2,6 +2,7 @@
   <main ref="main">
     <section class="main">
       <Modal :loading="modal.loading" :text="modal.text" v-if="modal.show" @close-modal="modal.show = false" />
+      <Settings v-if="showSettings" @close="showSettings = false" :size="size" @update="handleCanvasSize" />
       <input type="text" id="title" v-model="title" @blur="handleTitleBlur" />
       <section class="canvas" ref="canvasContainer">
         <canvas
@@ -61,6 +62,9 @@
           <div class="button" @click="handleDownload">
             <i class="material-icons">file_download</i>
           </div>
+          <div class="button" @click="showSettings = true">
+            <i class="material-icons">settings</i>
+          </div>
         </article>
       </section>
     </section>
@@ -70,8 +74,9 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
-import { IUser } from '../utils/interfaces';
+import { IUser, ISize } from '../utils/interfaces';
 import Modal from '../components/Modal.vue';
+import Settings from '../components/Settings.vue';
 
 interface IHistory {
   x?: number;
@@ -96,6 +101,7 @@ interface IModal {
 export default defineComponent({
   components: {
     Modal,
+    Settings,
   },
   props: {
     user: {
@@ -125,6 +131,11 @@ export default defineComponent({
         show: false,
         text: '',
       } as IModal,
+      showSettings: false,
+      size: {
+        width: 0,
+        height: 0,
+      } as ISize,
     };
   },
   mounted() {
@@ -216,14 +227,18 @@ export default defineComponent({
 
       if (!width) {
         canvas.width = main.clientWidth;
+        this.size.width = main.clientWidth;
       } else {
         canvas.width = width;
+        this.size.width = width;
       }
 
       if (!height) {
         canvas.height = 400;
+        this.size.height = 400;
       } else {
         canvas.height = height;
+        this.size.height = height;
       }
       const context = canvas.getContext('2d');
       if (!context) return;
@@ -377,6 +392,25 @@ export default defineComponent({
         this.modal.show = true;
         this.$router.push('/');
       }
+    },
+    handleCanvasSize(payload: ISize) {
+      this.showSettings = false;
+      console.log(payload);
+      const canvas = this.$refs.canvas as HTMLCanvasElement;
+      const context = canvas.getContext('2d');
+      const base64 = canvas.toDataURL();
+      canvas.width = payload.width;
+      canvas.height = payload.height;
+      const image = new Image();
+      image.addEventListener('load', () => {
+        if (!context) return;
+        context.fillStyle = '#FFFFFF';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, canvas.width / 2 - image.width / 2, canvas.height / 2 - image.height / 2);
+      });
+      image.src = base64;
+      this.size.width = payload.width;
+      this.size.height = payload.height;
     },
   },
 });

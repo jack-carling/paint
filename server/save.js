@@ -20,10 +20,10 @@ module.exports = (app) => {
     if (!width || !height) {
       return handleError(res, 'Size is missing');
     }
-    if (width > 2000) {
+    if (width > 1000) {
       return handleError(res, 'Width is too big.');
     }
-    if (height > 2000) {
+    if (height > 1000) {
       return handleError(res, 'Height is too big.');
     }
     if (typeof public !== 'boolean') {
