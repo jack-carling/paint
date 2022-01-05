@@ -246,8 +246,11 @@ export default defineComponent({
       context.fillRect(0, 0, canvas.width, canvas.height);
     },
     handleKey(event: KeyboardEvent) {
-      const { tagName } = event.target as HTMLElement;
-      if (tagName === 'INPUT') return;
+      event.preventDefault();
+      const element = event.target as HTMLElement;
+      const type = element.getAttribute('type');
+
+      if (type === 'text') return;
       if (event.code === 'KeyZ' && event.ctrlKey) return this.handleUndo();
       if (event.code === 'KeyY' && event.ctrlKey) return this.handleRedo();
       switch (event.code) {
