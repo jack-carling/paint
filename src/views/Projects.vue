@@ -13,7 +13,9 @@
 
     <section class="projects">
       <div class="project" v-for="project in projects">
-        <img @click="$router.push(`/${project.id}`)" :src="project.base64" />
+        <div class="image" :ref="setImages">
+          <img @click="$router.push(`/${project.id}`)" :src="project.base64" />
+        </div>
         <span><b>Title: </b>{{ project.title }}</span>
         <span><b>Created: </b>{{ displayDate(project.created) }}</span>
         <span><b>Last edited: </b>{{ displayDate(project.edited) }}</span>
@@ -55,6 +57,7 @@ export default defineComponent({
     return {
       loading: true,
       projects: [] as IProjects[],
+      images: [] as any[],
     };
   },
   watch: {
@@ -86,6 +89,7 @@ export default defineComponent({
       this.loading = false;
       if (data.success) {
         this.projects = data.data;
+        this.handleResize();
       }
     },
     displayDate(date: number) {
@@ -94,6 +98,22 @@ export default defineComponent({
     displaySize(width: number, height: number) {
       return `${width}x${height}`;
     },
+    setImages(element: unknown) {
+      if (element) this.images.push(element);
+    },
+    handleResize() {
+      this.$nextTick(() => {
+        this.images.forEach((div: HTMLDivElement) => {
+          div.style.height = `${div.clientWidth}px`;
+        });
+      });
+    },
+  },
+  mounted() {
+    window.addEventListener('resize', this.handleResize);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize);
   },
 });
 </script>
@@ -112,14 +132,30 @@ section.projects {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 3rem 1rem;
+  @media only screen and (min-width: 1200px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media only screen and (max-width: 500px) {
+    grid-template-columns: 1fr;
+  }
 }
 div.project {
   display: flex;
   flex-direction: column;
-  img {
-    max-width: 100%;
+  div.image {
     margin-bottom: 0.5rem;
     cursor: pointer;
+    display: grid;
+    place-items: center;
+    $color: #dfe0e1;
+    background-image: linear-gradient(45deg, $color 25%, transparent 25%),
+      linear-gradient(-45deg, $color 25%, transparent 25%), linear-gradient(45deg, transparent 75%, $color 75%),
+      linear-gradient(-45deg, transparent 75%, $color 75%);
+    background-size: 30px 30px;
+    background-position: 0 0, 0 15px, 15px -15px, -15px 0px;
+    img {
+      max-width: 100%;
+    }
   }
   span {
     font-size: 0.8rem;
