@@ -398,7 +398,6 @@ export default defineComponent({
     },
     handleCanvasSize(payload: ISize) {
       this.showSettings = false;
-      console.log(payload);
       const canvas = this.$refs.canvas as HTMLCanvasElement;
       const context = canvas.getContext('2d');
       const base64 = canvas.toDataURL();

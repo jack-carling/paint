@@ -1,5 +1,6 @@
 const Canvas = require('./models/Canvas');
 const User = require('./models/User');
+const jwt = require('jsonwebtoken');
 const { validateToken } = require('./token');
 
 module.exports = (app) => {
@@ -108,6 +109,25 @@ module.exports = (app) => {
       result.success = true;
       result.message = 'Successfully fetched a project.';
       result.data = project;
+    } catch (error) {
+      return handleError(res, error);
+    }
+    res.json(result);
+  });
+
+  app.delete('/api/projects/delete/:id', validateToken, async (req, res) => {
+    const result = { success: false, message: '' };
+    const token = req.header('Authorization')?.split(' ')[1];
+    const { email } = jwt.decode(token);
+    const { id } = req.params;
+    try {
+      const [project] = await Canvas.find({ id });
+      if (!project) return handleError(res, 'No project with this ID.');
+      if (project.email !== email) return handleError(res, 'Only the author may delete projects.');
+      const { _id } = project;
+      await Canvas.findByIdAndDelete(_id);
+      result.success = true;
+      result.message = 'Successfully deleted a project.';
     } catch (error) {
       return handleError(res, error);
     }
