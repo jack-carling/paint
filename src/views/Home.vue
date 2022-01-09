@@ -378,6 +378,13 @@ export default defineComponent({
       const response: Response = await fetch(`/api/projects/${id}`);
       const data = await response.json();
       if (data.success) {
+        if (data.data.email !== this.user?.email && !data.public) {
+          this.handleResize();
+          this.modal.text = 'This project is not public.';
+          this.modal.show = true;
+          this.$router.push('/');
+          return;
+        }
         const { width, height, base64 } = data.data;
         this.handleResize(width, height);
 
