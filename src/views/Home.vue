@@ -225,6 +225,8 @@ export default defineComponent({
       const canvas = this.$refs.canvas as HTMLCanvasElement;
       const main = this.$refs.main as HTMLElement;
 
+      if (main.clientWidth > 1000) width = 1000;
+
       if (!width) {
         canvas.width = main.clientWidth;
         this.size.width = main.clientWidth;
