@@ -1,6 +1,6 @@
 # Paint
 
-Work in progress...
+Draw on canvas with any colour and different brush sizes. Undo/redo and zoom in/out as well as grab and move in case canvas protrudes the viewport. Save projects either locally as a `.jpg` or create an account, login and save to the database. Authentication using JWT and saving to MongoDB. Share the unique link to your project with anyone, but only if your privacy settings allows it.
 
 ## Setup
 
@@ -16,12 +16,6 @@ $ yarn dev
 # Terminal 2: Run backend server
 $ yarn server
 ```
-
-## About
-
-Paint on canvas in a more Figma way...
-
-Draw on canvas with any colour and different brush sizes. Undo/redo and zoom in/out as well as grab and move in case canvas protrudes the viewport. Save projects either locally as a `.jpg` or create an account, login and save to the database. Authentication using JWT and saving to MongoDB. Share the unique link to your project with anyone. More features on the way.
 
 ## Screenshot
 
