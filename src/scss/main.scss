@@ -56,3 +56,29 @@ button:disabled {
   border: 1px solid $gray;
   background-color: $gray;
 }
+
+div.select {
+  width: 100%;
+  background-color: $white;
+  position: relative;
+  border: 1px solid $blue;
+  border-radius: 0.3rem;
+  select {
+    width: 100%;
+    appearance: none;
+    border: none;
+    outline: none;
+    background: none;
+    font-size: 1rem;
+    padding: 0.5rem;
+  }
+  i {
+    pointer-events: none;
+    position: absolute;
+    height: 24px;
+    top: 0;
+    bottom: 0;
+    right: 0.5rem;
+    margin: auto;
+  }
+}

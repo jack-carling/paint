@@ -10,6 +10,16 @@
         <span>Height:</span>
         <input type="number" min="100" max="1000" v-model="height" @blur="handleBlur('height')" />
       </div>
+      <div class="input" v-if="public !== undefined">
+        <span>Access:</span>
+        <div class="select">
+          <select v-model="access">
+            <option value="Private">Private</option>
+            <option value="Public">Public</option>
+          </select>
+          <i class="material-icons">expand_more</i>
+        </div>
+      </div>
       <span class="warning" v-show="showWarning">
         <i class="material-icons">warning</i>
         Warning! Canvas is smaller than before, cropping may occur!
@@ -31,6 +41,10 @@ export default defineComponent({
     size: {
       type: Object as PropType<ISize>,
     },
+    public: {
+      type: Boolean as PropType<Boolean | undefined>,
+    },
+    id: String,
   },
   data() {
     return {
@@ -38,20 +52,25 @@ export default defineComponent({
       height: 0,
       buttonText: 'Update',
       showWarning: false,
+      access: '',
     };
   },
   mounted() {
     this.width = this.size?.width ?? 0;
     this.height = this.size?.height ?? 0;
+    this.access = this.public ? 'Public' : 'Private';
   },
   methods: {
     handleUpdate() {
+      this.handleAccess();
       if (this.buttonText === 'Confirm') {
         return this.confirmUpdate();
       }
       if (this.width < this.size!.width || this.height < this.size!.height) {
         this.showWarning = true;
         this.buttonText = 'Confirm';
+      } else if (this.width === this.size!.width && this.height === this.size!.height) {
+        this.$emit('close');
       } else {
         this.confirmUpdate();
       }
@@ -70,6 +89,21 @@ export default defineComponent({
         this.height = Math.round(this.height);
         if (this.height < 100) this.height = 100;
         if (this.height > 1000) this.height = 1000;
+      }
+    },
+    async handleAccess() {
+      if (this.public && this.access === 'Public') return;
+      if (!this.public && this.access === 'Private') return;
+      const response: Response = await fetch(`/api/projects/access/${this.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.token}`,
+        },
+      });
+      const data = await response.json();
+      if (data.success) {
+        this.$emit('update-access');
       }
     },
   },

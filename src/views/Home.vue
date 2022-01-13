@@ -2,7 +2,15 @@
   <main ref="main">
     <section class="main">
       <Modal :loading="modal.loading" :text="modal.text" v-if="modal.show" @close-modal="modal.show = false" />
-      <Settings v-if="showSettings" @close="showSettings = false" :size="size" @update="handleCanvasSize" />
+      <Settings
+        v-if="showSettings"
+        @close="showSettings = false"
+        :size="size"
+        :public="public"
+        :id="id"
+        @update="handleCanvasSize"
+        @update-access="updatePublic"
+      />
       <input type="text" id="title" v-model="title" @blur="handleTitleBlur" />
       <section class="canvas" ref="canvasContainer">
         <canvas
@@ -136,6 +144,7 @@ export default defineComponent({
         width: 0,
         height: 0,
       } as ISize,
+      public: undefined as undefined | Boolean,
     };
   },
   mounted() {
@@ -225,15 +234,12 @@ export default defineComponent({
       const canvas = this.$refs.canvas as HTMLCanvasElement;
       const main = this.$refs.main as HTMLElement;
 
-      if (main.clientWidth > 1000) width = 1000;
-
       if (!width) {
-        canvas.width = main.clientWidth;
-        this.size.width = main.clientWidth;
-      } else {
-        canvas.width = width;
-        this.size.width = width;
+        main.clientWidth > 1000 ? (width = 1000) : (width = main.clientWidth);
       }
+
+      canvas.width = width;
+      this.size.width = width;
 
       if (!height) {
         canvas.height = 400;
@@ -380,7 +386,7 @@ export default defineComponent({
       const response: Response = await fetch(`/api/projects/${id}`);
       const data = await response.json();
       if (data.success) {
-        if (data.data.email !== this.user?.email && !data.public) {
+        if (data.data.email !== this.user?.email && !data.data.public) {
           this.handleResize();
           this.modal.text = 'This project is not public.';
           this.modal.show = true;
@@ -389,6 +395,8 @@ export default defineComponent({
         }
         const { width, height, base64 } = data.data;
         this.handleResize(width, height);
+
+        this.public = data.data.public;
 
         const canvas = this.$refs.canvas as HTMLCanvasElement;
         const context = canvas.getContext('2d');
@@ -422,6 +430,9 @@ export default defineComponent({
       image.src = base64;
       this.size.width = payload.width;
       this.size.height = payload.height;
+    },
+    updatePublic() {
+      if (this.public !== undefined) this.public = !this.public;
     },
   },
 });

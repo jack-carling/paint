@@ -134,6 +134,21 @@ module.exports = (app) => {
     res.json(result);
   });
 
+  app.patch('/api/projects/access/:id', async (req, res) => {
+    const result = { success: false, message: '' };
+    const { id } = req.params;
+    try {
+      const [project] = await Canvas.find({ id });
+      if (!project) return handleError(res, 'No project with this ID.');
+      await Canvas.findOneAndUpdate({ id }, { public: !project.public });
+      result.success = true;
+      result.message = 'Successfully changed access.';
+    } catch (error) {
+      return handleError(res, error);
+    }
+    res.json(result);
+  });
+
   function handleError(res, message) {
     const result = { success: false, message };
     res.json(result);
